@@ -1,52 +1,26 @@
-import * as React from "react";
-import { useState } from "react";
-import AppBar from "@mui/material/AppBar";
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
-import Grid from "@mui/material/Grid";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
+import React, { useState } from "react";
 import Container from "@mui/material/Container";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import MenuIcon from "@mui/icons-material/Menu";
-import SwipeableDrawer from "@mui/material/SwipeableDrawer";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import IconButton from "@mui/material/IconButton";
-import Divider from "@mui/material/Divider";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import GroupIcon from "@mui/icons-material/Group";
-import PostAddIcon from "@mui/icons-material/PostAdd";
+import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import AdminHeader from "../../components/admin/AdminHeader";
+import Sidebar from "../../components/admin/Sidebar";
+import { Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-
-const cards = [1, 2, 3];
-
-const SidebarOptions = [
-  {
-    text: "Dashboard",
-    icon: <DashboardIcon />,
-    link: "/admin",
-  },
-  {
-    text: "View Users",
-    icon: <GroupIcon />,
-    link: "/admin/view-users",
-  },
-  {
-    text: "View Posts",
-    icon: <PostAddIcon />,
-    link: "/admin/view-posts",
-  },
+import { useDispatch } from "react-redux";
+import { clearAdmin } from "../../redux/adminAuthReducer";
+const data = [
+  { name: 'Page A', uv: 4000, pv: 2400, amt: 2400 },
+  { name: 'Page B', uv: 3000, pv: 1398, amt: 2210 },
+  { name: 'Page C', uv: 2000, pv: 9800, amt: 2290 },
+  { name: 'Page D', uv: 2780, pv: 3908, amt: 2000 },
+  { name: 'Page E', uv: 1890, pv: 4800, amt: 2181 },
+  { name: 'Page F', uv: 2390, pv: 3800, amt: 2500 },
+  { name: 'Page G', uv: 3490, pv: 4300, amt: 2100 },
 ];
 
 export default function AdminHome() {
@@ -54,6 +28,10 @@ export default function AdminHome() {
   const MySwal = withReactContent(Swal);
   const navigate = useNavigate();
 
+  const toggleSidebar = () => { 
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+const dispatch = useDispatch()
   const handleLogout = () => {
     MySwal.fire({
       title: "Are you sure?",
@@ -68,141 +46,85 @@ export default function AdminHome() {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        // Perform delete operation
-        localStorage.removeItem("token");
-        navigate("/sign-in");
+      dispatch(clearAdmin())
+        navigate("/admin/login");
       }
     });
   };
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  const closeSidebar = () => {
-    setIsSidebarOpen(false);
+  const handleNavigate = (link) => {
+    navigate(link);
   };
 
   return (
     <>
-      <AppBar position="relative" sx={{ background: "white" }}>
-        <Toolbar sx={{ justifyContent: "space-between" }}>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={toggleSidebar}
-              edge="start"
-              sx={{ mr: 2 }}
-            >
-              <MenuIcon sx={{background:'black'}}/>
-            </IconButton>
-            <AccountCircleIcon sx={{ mr: 2, background: "black" }} />
-            <Typography variant="h6" color="textPrimary" noWrap>
-              Admin
-            </Typography>
-          </Box>
-          <Button sx={{ color: "black" }} onClick={handleLogout}>
-            Logout
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <SwipeableDrawer
-        anchor="left"
-        open={isSidebarOpen}
-        onClose={closeSidebar}
-        onOpen={() => {}}
-      >
-        <Box
-          sx={{ width: 240 }}
-          role="presentation"
-          onClick={closeSidebar}
-          onKeyDown={closeSidebar}
-        >
-          <IconButton onClick={closeSidebar}>
-            <ChevronLeftIcon />
-          </IconButton>
-          <Divider />
-          <List>
-            {SidebarOptions.map((option, index) => (
-              <ListItem button key={index} onClick={() => navigate(option.link)}>
-                <ListItemIcon>{option.icon}</ListItemIcon>
-                <ListItemText primary={option.text} />
-              </ListItem>
-            ))}
-          </List>
-        </Box>
-      </SwipeableDrawer>
+      <AdminHeader toggleSidebar={toggleSidebar} handleLogout={handleLogout} />
+      <Sidebar
+        isSidebarOpen={isSidebarOpen}
+        closeSidebar={() => setIsSidebarOpen(false)}
+        navigate={handleNavigate} // Pass the handleNavigate function
+      />
       <main>
         {/* Hero unit */}
-        <Box
-          sx={{
-            bgcolor: "background.paper",
-            pt: 8,
-            pb: 6,
-          }}
-        >
-          <Container maxWidth="sm">
-            <Typography
-              component="h1"
-              variant="h2"
-              align="center"
-              color="text.primary"
-              gutterBottom
-            >
-              Admin Dashboard
-            </Typography>
-            <Stack
-              sx={{ pt: 4 }}
-              direction="row"
-              spacing={2}
-              justifyContent="center"
-            ></Stack>
-          </Container>
-        </Box>
+        
         <Container sx={{ py: 8 }} maxWidth="md">
           {/* End hero unit */}
           <Grid container spacing={4}>
-            {cards.map((card) => (
-              <Grid item key={card} xs={12} sm={6} md={4}>
-                <Card
-                  sx={{
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <CardMedia
-                    component="div"
-                    sx={{
-                      // 16:9
-                      pt: "56.25%",
-                    }}
-                    image="https://source.unsplash.com/random?wallpapers"
-                  />
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography gutterBottom variant="h5" component="h2">
-                      Heading
-                    </Typography>
-                    <Typography>
-                      This is a media card. You can use this section to describe
-                      the content.
-                    </Typography>
-                  </CardContent>
-                  <CardActions>
-                    <Button size="small">View</Button>
-                    <Button size="small">Edit</Button>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))}
+            <Grid item xs={12} sm={6} md={6}>
+              <Card
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography gutterBottom variant="h5" component="h2">
+                    Bar Chart
+                  </Typography>
+                  <BarChart width={400} height={300} data={data}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="pv" fill="#8884d8" />
+                    <Bar dataKey="uv" fill="#82ca9d" />
+                  </BarChart>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={6} md={6}>
+              <Card
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography gutterBottom variant="h5" component="h2">
+                    Line Chart
+                  </Typography>
+                  <LineChart width={400} height={300} data={data}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="pv" stroke="#8884d8" />
+                    <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+                  </LineChart>
+                </CardContent>
+              </Card>
+            </Grid>
           </Grid>
         </Container>
       </main>
       {/* Footer */}
       <Box sx={{ bgcolor: "background.paper", p: 6 }} component="footer">
         <Typography variant="h6" align="center" gutterBottom>
-          Footer
+          Footer Circle-up@{new Date().getFullYear()}
         </Typography>
       </Box>
     </>

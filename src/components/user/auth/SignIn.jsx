@@ -13,12 +13,18 @@ import * as Yup from "yup";
 import axios from "../../../axios/axios";
 import { Alert } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { loginFailure,loginSuccess } from "../../../redux/loginReducers";
-import { useEffect } from "react";
+import {
+  loginFailure,
+  loginSuccess,
+  userBlocked,
+} from "../../../redux/loginReducers";
+import { auth, provider } from "../../../firebase/config";
+import { signInWithPopup } from "firebase/auth";
+import { setUserDetails } from "../../../redux/singlereducer";
 
 export default function SignIn() {
-  React.useLayoutEffect(() => {
-    const auth = localStorage.getItem("token");
+  const auth = useSelector((state) => state.user.payload);
+  React.useEffect(() => {
     if (auth) {
       navigate("/");
     }
@@ -26,6 +32,7 @@ export default function SignIn() {
 
   const dispatch = useDispatch();
   const error = useSelector((state) => state.login.error);
+  const blocked = useSelector((state) => state.login.blocked);
   const navigate = useNavigate();
   const formik = useFormik({
     initialValues: {
@@ -41,17 +48,32 @@ export default function SignIn() {
     onSubmit: async (values) => {
       // Handle form submission
       await axios.post("/sign-in", values).then((response) => {
+        console.log(response);
         if (response.data.status) {
-          console.log(response.data.userExist);
-          localStorage.setItem("token",JSON.stringify(response.data.userExist));
-          dispatch(loginSuccess())
+          dispatch(setUserDetails({ payload: response.data.userExist }));
+          dispatch(loginSuccess());
           navigate("/");
+        } else if (response.data.blocked) {
+          dispatch(userBlocked());
         } else {
           dispatch(loginFailure());
         }
       });
     },
   });
+
+  const handleGoogleSignIn = () => {
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        // Handle successful sign-in
+        console.log(result);
+        // navigate('/')
+      })
+      .catch((error) => {
+        // Handle sign-in errors
+        console.log(error);
+      });
+  };
 
   return (
     <Container
@@ -72,6 +94,11 @@ export default function SignIn() {
         {error && (
           <Alert variant="filled" severity="error">
             Error Invalid Credentials!
+          </Alert>
+        )}
+        {blocked && (
+          <Alert variant="filled" severity="error">
+            Blocked By Admin!
           </Alert>
         )}
         <Avatar sx={{ m: 1, bgcolor: "blue" }}></Avatar>
@@ -130,6 +157,17 @@ export default function SignIn() {
               >
                 {"Don't have an account? Sign Up"}
               </Link>
+            </Grid>
+          </Grid>
+          <Grid container justifyContent="center" sx={{ marginBottom: "10px" }}>
+            <Grid item>
+              <Typography sx={{ textAlign: "center" }}>OR</Typography>
+              <img
+                onClick={handleGoogleSignIn}
+                src="https://onymos.com/wp-content/uploads/2020/10/google-signin-button.png"
+                alt="Google Sign In"
+                style={{ width: "100%", height: 50, cursor: "pointer" }}
+              />
             </Grid>
           </Grid>
         </Box>

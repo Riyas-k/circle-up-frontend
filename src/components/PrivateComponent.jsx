@@ -1,11 +1,11 @@
+import { useSelector } from "react-redux";
 import { Navigate,Outlet } from "react-router-dom";
-
 const PrivateComponent =()=>{
-    const auth = localStorage.getItem('token')
-    return auth ?<Outlet />:<Navigate to='/sign-in'/>
+    const auth = useSelector((state)=>state.user.payload)
+    return auth ?<Outlet />:<Navigate to='/sign-in' replace/>
 }
 export const AdminPrivateComponent = ()=>{
-    const auth = localStorage.getItem('admin')
-    return auth?<Outlet />:<Navigate to='/admin/login'/>
+    const auth =  useSelector((state)=>state.admin.payload)
+    return auth?<Outlet />:<Navigate to='/admin/login' replace/>
 }
 export default PrivateComponent

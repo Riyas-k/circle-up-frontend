@@ -1,5 +1,5 @@
 import * as React from "react";
-import { styled, alpha } from "@mui/material/styles";
+import { styled, alpha, useTheme } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -18,6 +18,8 @@ import HomeIcon from "@mui/icons-material/Home";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import SettingsIcon from "@mui/icons-material/Settings";
+import { useDispatch, useSelector } from "react-redux";
+import { clearUser } from "../../../redux/singlereducer";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -60,6 +62,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function Header() {
+  const user = useSelector((state)=>state.user.payload)
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
   const MySwal = withReactContent(Swal);
@@ -83,6 +86,7 @@ export default function Header() {
   const handleMobileMenuOpen = (event) => {
     setMobileMoreAnchorEl(event.currentTarget);
   };
+  const dispatch = useDispatch()
 
   const handleLogout = () => {
     MySwal.fire({
@@ -100,6 +104,7 @@ export default function Header() {
       if (result.isConfirmed) {
         // Perform delete operation
         localStorage.removeItem("token");
+        dispatch(clearUser())
         navigate("/sign-in");
       }
     });
@@ -123,7 +128,7 @@ export default function Header() {
       onClose={handleMenuClose}
     >
       <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleLogout}>Logout</MenuItem>
+      <MenuItem onClick={handleLogout} sx={{color:'red'}}>Logout</MenuItem>
     </Menu>
   );
 
@@ -154,7 +159,7 @@ export default function Header() {
         >
           <SettingsIcon />
         </IconButton>
-        <p>Settings</p>
+        <p style={{marginTop:'12px'}}>Settings</p>
       </MenuItem>
     </Menu>
   );
@@ -172,7 +177,7 @@ export default function Header() {
           >
             <MenuIcon />
           </IconButton>
-          
+
           <Link to={"/"} style={{ textDecoration: "none", color: "black" }}>
             <Typography
               variant="h6"
@@ -186,9 +191,10 @@ export default function Header() {
 
           <Search
             sx={{
-              marginLeft: { xs: 0, sm: 2 }, border:'1px solid black',
+              marginLeft: { xs: 0, sm: 2 },
+              border: "1px solid black",
               width: { xs: "100%", sm: "auto" },
-              maxWidth: { xs: "none", sm: "20ch" },
+              maxWidth: { xs: "none", sm: "none" },
             }}
           >
             <SearchIconWrapper>
@@ -208,7 +214,7 @@ export default function Header() {
             aria-label="account of current user"
             aria-haspopup="true"
             color="inherit"
-            sx={{ ml: 1 }}
+            sx={{ ml: 1,mt:-0 }}
           >
             <AddBoxIcon />
             <Typography
@@ -219,7 +225,7 @@ export default function Header() {
             </Typography>
           </IconButton>
 
-          <Box sx={{ display: { xs: "none", md: "flex" } }}>
+          <Box sx={{ display: { xs: "none", md: "flex",marginTop:'-10px' } }}>
             <IconButton
               size="large"
               aria-label="show 4 new mails"
@@ -240,7 +246,10 @@ export default function Header() {
             onClick={handleProfileMenuOpen}
             color="inherit"
           >
-            <AccountCircle />
+            <AccountCircle /> 
+            <Typography variant="body1" component="span" marginLeft={1}>
+        {user.firstName}
+      </Typography>
           </IconButton>
           <IconButton
             size="large"

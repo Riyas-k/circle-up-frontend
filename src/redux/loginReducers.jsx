@@ -2,7 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     isLoggedIn :false,
-    error:false
+    error:false,
+    blocked:false
 }
 
 const loginSlice = createSlice({
@@ -14,9 +15,12 @@ const loginSlice = createSlice({
         },
         loginFailure:(state)=>{
             (state.isLoggedIn=false),(state.error=true)
+        },
+        userBlocked:(state)=>{
+            (state.blocked=true)
         }
     }
 })
 
-export const {loginFailure,loginSuccess} = loginSlice.actions;
+export const {loginFailure,loginSuccess,userBlocked} = loginSlice.actions;
 export default loginSlice.reducer

@@ -13,7 +13,8 @@ import axios from "../../../axios/axios";
 import { useNavigate } from "react-router-dom";
 import { Alert } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { loginFailure } from "../../../redux/loginReducers";
+import { loginFailure, loginSuccess } from "../../../redux/loginReducers";
+import { setAdmin } from "../../../redux/adminAuthReducer";
 
 const defaultTheme = createTheme();
 
@@ -25,8 +26,8 @@ export default function AdminLogin() {
     email: yup.string().required("Email is required"),
     password: yup.string().required("Password is required"),
   });
+  const auth = useSelector((state)=>state.admin.payload)
   useEffect(()=>{
-    const auth = localStorage.getItem('admin')
     if(auth){
       navigate('/admin')
     }
@@ -40,9 +41,10 @@ export default function AdminLogin() {
     validationSchema,
     onSubmit: async (values) => {
       await axios.post("/admin/login", values).then(async (res) => {
-        console.log(res);
+        console.log(res.data.data.admin,'res');
         if (res.data.status) {
-          await localStorage.setItem("admin", res.data.admin);
+           dispatch(setAdmin({payload:res.data.data.admin}))
+           dispatch(loginSuccess());
           navigate("/admin");
         } else {
           dispatch(loginFailure());

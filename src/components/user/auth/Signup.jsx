@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import Avatar from "@mui/material/Avatar";
@@ -12,10 +12,13 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import axios from "../../../axios/axios";
 import { Alert } from "@mui/material";
+import {auth,provider} from '../../../firebase/config';
+import { signInWithPopup } from "firebase/auth";
+import { useSelector } from "react-redux";
 
 export default function SignUp() {
-  useLayoutEffect(() => {
-    const auth = localStorage.getItem("token");
+  const auth = useSelector((state) => state.user.payload);
+  React.useEffect(() => {
     if (auth) {
       navigate("/");
     }
@@ -41,6 +44,28 @@ export default function SignUp() {
       .required("Email is required"),
     password: Yup.string().required("Password is required").min(6,"Password must be at least 6 characters"),
   });
+  const [value,setValue] = React.useState()
+  const handleGoogleSignIn = () => {
+    signInWithPopup(auth,provider).then(async(data)=>{
+        const {email,displayName,photoURL} = data.user
+        setValue({
+          email:email || '',
+          displayName:displayName || '',
+          photoURL:photoURL || ''
+        })
+      await axios.post('/google',value).then((response)=>{
+        console.log(response);
+        if (response.data.status) {
+
+          navigate("/sign-in");
+        } else {  
+          console.log('else');
+          setstate(true);
+        }
+      
+      })
+    })
+  };
 
   const onSubmit = async (values) => {
     try {
@@ -200,7 +225,19 @@ export default function SignUp() {
               </Link>
             </Grid>
           </Grid>
+         
         </Box>
+        <Grid container justifyContent="center" sx={{ marginBottom: "10px" }}>
+            <Grid item>
+              <Typography sx={{textAlign:'center'}}>OR</Typography>
+              <img
+                onClick={handleGoogleSignIn}
+                src="https://onymos.com/wp-content/uploads/2020/10/google-signin-button.png"
+                alt="Google Sign In"
+                style={{ width: "100%", height: 50,cursor:'pointer' }}
+              />
+            </Grid>
+          </Grid>
       </Box>
     </Container>
   );
